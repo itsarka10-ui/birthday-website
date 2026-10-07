@@ -1,386 +1,541 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Birthday Surprise - 3D Balloons</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Happy Birthday | Premium 3D Experience</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      width: 100%;
-      height: 100vh;
-      background: linear-gradient(135deg, #f7dfe7 0%, #fce4ec 100%);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: "Arial", sans-serif;
-      overflow: hidden;
-    }
-
-    #canvas-container {
-      position: relative;
-      width: 100%;
-      max-width: 1200px;
-      height: 600px;
-      background: linear-gradient(to bottom, #f7dfe7 0%, #ffe0e6 100%);
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 20px 60px rgba(111, 61, 76, 0.25);
-    }
-
-    canvas {
-      display: block;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
       width: 100%;
       height: 100%;
+      background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 50%, #16213e 100%);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      overflow: hidden;
+      color: #f8fafc;
     }
 
-    .tap-message {
+    #webgl-container {
       position: absolute;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 18px;
-      color: #9d4d61;
-      font-weight: 600;
-      text-align: center;
-      animation: pulse 2s ease-in-out infinite;
+      inset: 0;
+      z-index: 1;
+    }
+
+    /* Ambient particles background */
+    .particles-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    .ui-overlay {
+      position: absolute;
+      inset: 0;
       z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 60px 40px;
+    }
+
+    .header-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
       pointer-events: none;
     }
 
-    .tap-message.hidden {
-      display: none;
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: translateX(-50%) scale(1); opacity: 1; }
-      50% { transform: translateX(-50%) scale(1.05); opacity: 0.8; }
-    }
-
     .title {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 28px;
-      font-weight: 700;
-      color: #9d4d61;
-      z-index: 10;
-      text-shadow: 0 2px 4px rgba(255, 255, 255, 0.4);
-    }
-
-    .instruction {
-      position: absolute;
-      top: 60px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 14px;
-      color: #b8738a;
-      z-index: 10;
+      font-size: clamp(2.2rem, 6vw, 4.5rem);
+      font-weight: 900;
+      background: linear-gradient(135deg, #06b6d4 0%, #ec4899 40%, #facc15 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 3px;
       text-align: center;
-      max-width: 300px;
+      line-height: 1.2;
+      opacity: 0;
+      transform: translateY(-30px);
+      animation: fadeInDown 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+      text-shadow: 0 20px 40px rgba(6, 182, 212, 0.2);
+      filter: drop-shadow(0 0 20px rgba(236, 72, 153, 0.2));
     }
 
+    .subtitle {
+      font-size: clamp(0.95rem, 2vw, 1.3rem);
+      color: #cbd5e1;
+      text-align: center;
+      letter-spacing: 1.5px;
+      opacity: 0;
+      animation: fadeInUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+      font-weight: 300;
+      max-width: 600px;
+    }
+
+    .action-section {
+      pointer-events: auto;
+      text-align: center;
+      animation: fadeIn 1s ease 1s forwards;
+      opacity: 0;
+    }
+
+    .release-btn {
+      background: linear-gradient(135deg, #0891b2 0%, #7c3aed 50%, #ec4899 100%);
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      padding: 16px 42px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 0 40px rgba(6, 182, 212, 0.4), 
+                  inset 0 0 20px rgba(255, 255, 255, 0.08);
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      letter-spacing: 1.5px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      text-transform: uppercase;
+    }
+
+    .release-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.6s;
+    }
+
+    .release-btn:hover::before {
+      transform: translateX(100%);
+    }
+
+    .release-btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 0 60px rgba(236, 72, 153, 0.6),
+                  0 20px 50px rgba(124, 58, 237, 0.4),
+                  inset 0 0 30px rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .release-btn:active {
+      transform: translateY(-2px);
+    }
+
+    .release-btn.released {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.9);
+    }
+
+    .emoji {
+      display: inline-block;
+      margin-left: 8px;
+      animation: bounce 1.2s ease-in-out infinite;
+    }
+
+    @keyframes fadeInDown {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    /* Info Panel */
+    .info-panel {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      pointer-events: none;
+      text-align: center;
+    }
+
+    .info-text {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      letter-spacing: 1px;
+      opacity: 0;
+      animation: fadeIn 1s ease 1.2s forwards;
+      text-transform: uppercase;
+    }
+
+    /* Responsive */
     @media (max-width: 768px) {
-      #canvas-container {
-        height: 500px;
+      .ui-overlay {
+        padding: 40px 20px;
       }
 
       .title {
-        font-size: 22px;
+        font-size: 2.2rem;
       }
 
-      .tap-message {
-        font-size: 16px;
-        bottom: 20px;
+      .release-btn {
+        padding: 14px 36px;
+        font-size: 1rem;
       }
     }
+
+    /* Loading animation */
+    .loading-dots {
+      display: inline-block;
+    }
+
+    .loading-dots span {
+      animation: blink 1.4s infinite;
+    }
+
+    .loading-dots span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .loading-dots span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes blink {
+      0%, 60%, 100% { opacity: 0.3; }
+      30% { opacity: 1; }
+    }
+
+    /* Glow effects */
+    .glow-orb {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.3;
+      filter: blur(60px);
+      animation: float 6s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .glow-1 {
+      width: 300px;
+      height: 300px;
+      background: #06b6d4;
+      top: -100px;
+      left: 10%;
+      animation-delay: 0s;
+    }
+
+    .glow-2 {
+      width: 250px;
+      height: 250px;
+      background: #ec4899;
+      bottom: -50px;
+      right: 15%;
+      animation-delay: 2s;
+    }
+
+    .glow-3 {
+      width: 200px;
+      height: 200px;
+      background: #7c3aed;
+      top: 50%;
+      right: 5%;
+      animation-delay: 4s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0); }
+      33% { transform: translate(20px, -20px); }
+      66% { transform: translate(-10px, 20px); }
+    }
   </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
-  <div id="canvas-container">
-    <div class="title">Happy Birthday!</div>
-    <div class="instruction">Tap the cork to release the balloons</div>
-    <div class="tap-message" id="tapMessage">👆 TAP THE CORK 👆</div>
+
+  <div class="glow-orb glow-1"></div>
+  <div class="glow-orb glow-2"></div>
+  <div class="glow-orb glow-3"></div>
+
+  <div id="webgl-container"></div>
+
+  <div class="ui-overlay">
+    <div class="header-section">
+      <h1 class="title">✨ Happy Birthday ✨</h1>
+      <p class="subtitle">A special moment to celebrate you</p>
+    </div>
+
+    <div class="action-section">
+      <button class="release-btn" id="releaseBtn">
+        Release Magic
+        <span class="emoji">🎈</span>
+      </button>
+    </div>
+
+    <div class="info-panel">
+      <p class="info-text">Tap to reveal the surprise</p>
+    </div>
   </div>
 
-  <!-- Three.js Library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <!-- GLTFLoader for loading .glb models -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/loaders/GLTFLoader.min.js"></script>
-
   <script>
-    // Scene setup
-    const container = document.getElementById("canvas-container");
+    // ============================================
+    // SCENE SETUP
+    // ============================================
+    const container = document.getElementById('webgl-container');
     const scene = new THREE.Scene();
+    
+    // Fog for depth
+    scene.fog = new THREE.FogExp2(0x0f172a, 0.008);
+    scene.background = new THREE.Color(0x0f172a);
+
     const camera = new THREE.PerspectiveCamera(
-      75,
-      container.clientWidth / container.clientHeight,
+      65,
+      window.innerWidth / window.innerHeight,
       0.1,
       1000
     );
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    camera.position.set(0, 2, 16);
+    camera.lookAt(0, 0, 0);
 
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setClearColor(0xf7dfe7, 1);
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      powerPreference: "high-performance",
+      alpha: true
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
     container.appendChild(renderer.domElement);
 
-    camera.position.z = 3;
+    // ============================================
+    // PROFESSIONAL LIGHTING SETUP
+    // ============================================
+    
+    // Key Light (Main warm light)
+    const keyLight = new THREE.DirectionalLight(0xffa500, 0.8);
+    keyLight.position.set(8, 12, 8);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.width = 2048;
+    keyLight.shadow.mapSize.height = 2048;
+    keyLight.shadow.camera.far = 50;
+    keyLight.shadow.camera.left = -20;
+    keyLight.shadow.camera.right = 20;
+    keyLight.shadow.camera.top = 20;
+    keyLight.shadow.camera.bottom = -20;
+    scene.add(keyLight);
 
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    // Fill Light (Soft blue)
+    const fillLight = new THREE.DirectionalLight(0x00bcd4, 0.4);
+    fillLight.position.set(-8, -5, 12);
+    scene.add(fillLight);
+
+    // Rim Light (Backlight)
+    const rimLight = new THREE.PointLight(0xff006e, 1.5, 50);
+    rimLight.position.set(0, 8, -15);
+    scene.add(rimLight);
+
+    // Ambient fill
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.9);
-    directionalLight.position.set(2, 3, 2);
-    directionalLight.castShadow = true;
-    scene.add(directionalLight);
+    // ============================================
+    // BALLOON MATERIAL & GEOMETRY
+    // ============================================
+    
+    function createBalloonMaterial(colorHex) {
+      return new THREE.MeshPhysicalMaterial({
+        color: colorHex,
+        roughness: 0.08,
+        metalness: 0.05,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.2,
+        transmission: 0.15,
+        IOR: 1.5,
+        thickness: 1.0,
+        ior: 1.5,
+        envMapIntensity: 1.2
+      });
+    }
 
-    // Store for balloon data
-    let balloons = [];
-    let cork = null;
-    let isAnimating = false;
-    let animationProgress = 0;
+    const materials = [
+      createBalloonMaterial(0xf43f5e),   // Rose
+      createBalloonMaterial(0x38bdf8),   // Cyan
+      createBalloonMaterial(0xfacc15),   // Gold
+      createBalloonMaterial(0xa855f7),   // Purple
+      createBalloonMaterial(0x10b981),   // Emerald
+      createBalloonMaterial(0xf97316)    // Orange
+    ];
 
-    // Create balloon function
-    function createBalloon(x, y, z, color) {
-      const geometry = new THREE.SphereGeometry(0.25, 32, 32);
+    // Balloon shape (sphere stretched vertically)
+    const balloonGeometry = new THREE.SphereGeometry(1.2, 40, 40);
+    balloonGeometry.scale(1, 1.35, 1);
+
+    const balloons = [];
+    const balloonGroup = new THREE.Group();
+    scene.add(balloonGroup);
+
+    // ============================================
+    // BALLOON CLUSTER LAYOUT (Premium arrangement)
+    // ============================================
+    const clusterLayout = [
+      { x: 0, y: 0, z: 0, mat: 0, scale: 1.1 },
+      { x: 2.2, y: 1.2, z: -1, mat: 1, scale: 0.95 },
+      { x: -2.0, y: 0.8, z: -0.8, mat: 2, scale: 1.0 },
+      { x: 1.3, y: -1.5, z: 0.6, mat: 3, scale: 0.9 },
+      { x: -1.5, y: -1.2, z: 0.4, mat: 4, scale: 1.05 },
+      { x: 0.5, y: 2.2, z: -1.2, mat: 5, scale: 0.85 },
+      { x: -0.8, y: 1.8, z: -0.9, mat: 0, scale: 0.95 },
+      { x: 2.5, y: -0.5, z: 0.5, mat: 2, scale: 0.9 }
+    ];
+
+    clusterLayout.forEach((pos, index) => {
+      const mesh = new THREE.Mesh(balloonGeometry, materials[pos.mat]);
+      mesh.scale.set(pos.scale, pos.scale, pos.scale);
+      mesh.position.set(pos.x, pos.y, pos.z);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
       
-      // Create material based on color
-      let material;
-      switch (color) {
-        case "red":
-          material = new THREE.MeshStandardMaterial({
-            color: 0xff6e75,
-            roughness: 0.2,
-            metalness: 0.1,
-            emissive: 0x330000
-          });
-          break;
-        case "blue":
-          material = new THREE.MeshStandardMaterial({
-            color: 0x1e8ad9,
-            roughness: 0.2,
-            metalness: 0.1,
-            emissive: 0x001a33
-          });
-          break;
-        case "yellow":
-          material = new THREE.MeshStandardMaterial({
-            color: 0xf7c948,
-            roughness: 0.2,
-            metalness: 0.1,
-            emissive: 0x332200
-          });
-          break;
-      }
+      // Natural rotation
+      mesh.rotation.x = (Math.random() - 0.5) * 0.3;
+      mesh.rotation.y = (Math.random() - 0.5) * 0.3;
+      mesh.rotation.z = (Math.random() - 0.5) * 0.2;
 
-      const balloon = new THREE.Mesh(geometry, material);
-      balloon.position.set(x, y, z);
-      balloon.castShadow = true;
-      balloon.receiveShadow = true;
-
-      // Add string
-      const stringGeometry = new THREE.BufferGeometry();
-      const stringPoints = [
-        new THREE.Vector3(0, -0.25, 0),
-        new THREE.Vector3(0.05, -0.8, 0),
-        new THREE.Vector3(0, -1.2, 0)
-      ];
-      stringGeometry.setFromPoints(stringPoints);
-      const stringMaterial = new THREE.LineBasicMaterial({ color: 0x999999, linewidth: 2 });
-      const string = new THREE.Line(stringGeometry, stringMaterial);
-
-      balloon.add(string);
-
-      // Store original position and animation data
-      balloon.userData = {
-        originalPosition: new THREE.Vector3(x, y, z),
-        endPosition: new THREE.Vector3(
-          x + (Math.random() - 0.5) * 2,
-          y + 3.5,
-          z + (Math.random() - 0.5) * 0.5
-        ),
-        delay: Math.random() * 0.3,
-        rotation: new THREE.Euler(
-          Math.random() * Math.PI,
-          Math.random() * Math.PI,
-          Math.random() * Math.PI
-        ),
-        sway: Math.random() * 0.1
+      mesh.userData = {
+        basePos: {
+          x: pos.x,
+          y: pos.y,
+          z: pos.z
+        },
+        speed: 0.8 + Math.random() * 0.6,
+        floatPhase: Math.random() * Math.PI * 2,
+        rotationSpeed: (Math.random() - 0.5) * 0.5
       };
 
-      scene.add(balloon);
-      return balloon;
-    }
+      balloonGroup.add(mesh);
+      balloons.push(mesh);
+    });
 
-    // Create cork stopper function
-    function createCork() {
-      const group = new THREE.Group();
+    // ============================================
+    // ANIMATION STATE
+    // ============================================
+    let isReleased = false;
+    let releaseProgress = 0;
+    let sceneTime = 0;
 
-      // Main cork body
-      const corkGeometry = new THREE.CylinderGeometry(0.12, 0.12, 0.25, 16);
-      const corkMaterial = new THREE.MeshStandardMaterial({
-        color: 0x8b5527,
-        roughness: 0.7,
-        metalness: 0,
-      });
-      const corkBody = new THREE.Mesh(corkGeometry, corkMaterial);
-      corkBody.castShadow = true;
-      corkBody.receiveShadow = true;
-      group.add(corkBody);
+    document.getElementById('releaseBtn').addEventListener('click', () => {
+      if (isReleased) return;
+      isReleased = true;
+      document.getElementById('releaseBtn').classList.add('released');
+    });
 
-      // Cork top cap
-      const capGeometry = new THREE.CylinderGeometry(0.14, 0.12, 0.08, 16);
-      const capMaterial = new THREE.MeshStandardMaterial({
-        color: 0x9d6534,
-        roughness: 0.6,
-        metalness: 0.1,
-      });
-      const cap = new THREE.Mesh(capGeometry, capMaterial);
-      cap.position.y = 0.165;
-      cap.castShadow = true;
-      cap.receiveShadow = true;
-      group.add(cap);
+    // ============================================
+    // RENDER LOOP
+    // ============================================
+    const clock = new THREE.Clock();
 
-      group.position.set(0, -0.5, 0);
-      group.userData = {
-        originalPosition: group.position.clone(),
-        isClickable: true
-      };
-
-      scene.add(group);
-      return group;
-    }
-
-    // Create balloons
-    balloons.push(createBalloon(-0.5, 0.2, 0, "red"));
-    balloons.push(createBalloon(0.3, 0.5, -0.1, "blue"));
-    balloons.push(createBalloon(-0.2, 0.8, 0.1, "yellow"));
-    balloons.push(createBalloon(0.6, 0.3, 0, "red"));
-    balloons.push(createBalloon(-0.7, 0.6, -0.1, "blue"));
-    balloons.push(createBalloon(0.1, 1.0, 0.1, "yellow"));
-
-    // Create cork
-    cork = createCork();
-
-    // Raycaster for mouse/touch detection
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
-
-    // Handle click/tap
-    function onTap(event) {
-      if (isAnimating) return;
-
-      // Get mouse position
-      const rect = container.getBoundingClientRect();
-      mouse.x = ((event.clientX || event.touches[0].clientX) - rect.left) / rect.width * 2 - 1;
-      mouse.y = -((event.clientY || event.touches[0].clientY) - rect.top) / rect.height * 2 + 1;
-
-      raycaster.setFromCamera(mouse, camera);
-
-      // Check if cork was clicked
-      const intersects = raycaster.intersectObjects(cork.children, true);
-
-      if (intersects.length > 0) {
-        startBalloonAnimation();
-      }
-    }
-
-    container.addEventListener("click", onTap);
-    container.addEventListener("touchstart", onTap);
-
-    // Animation function
-    function startBalloonAnimation() {
-      isAnimating = true;
-      animationProgress = 0;
-      document.getElementById("tapMessage").classList.add("hidden");
-
-      // Animate cork pop
-      cork.rotation.z = -0.3;
-      cork.position.y = -0.3;
-    }
-
-    // Idle sway animation
-    let time = 0;
-    function animateSway() {
-      if (isAnimating) return;
-
-      balloons.forEach((balloon) => {
-        balloon.position.y = balloon.userData.originalPosition.y + Math.sin(time * 1.5) * 0.05;
-        balloon.rotation.z = Math.sin(time * 0.8) * 0.1;
-      });
-
-      time += 0.016;
-    }
-
-    // Animation loop
     function animate() {
       requestAnimationFrame(animate);
+      sceneTime = clock.getElapsedTime();
 
-      if (isAnimating) {
-        animationProgress += 0.01; // Adjust speed here
+      if (!isReleased) {
+        // ========== IDLE STATE ==========
+        // Gentle floating cluster motion
+        balloonGroup.position.y = Math.sin(sceneTime * 1.2) * 0.4;
+        balloonGroup.position.x = Math.cos(sceneTime * 0.8) * 0.3;
+        balloonGroup.rotation.y = sceneTime * 0.15;
+        balloonGroup.rotation.z = Math.sin(sceneTime * 0.5) * 0.08;
 
-        if (animationProgress <= 1) {
-          balloons.forEach((balloon) => {
-            const delayedProgress = Math.max(0, animationProgress - balloon.userData.delay);
-            
-            if (delayedProgress > 0) {
-              // Easing function (ease-out)
-              const easeProgress = 1 - Math.pow(1 - Math.min(delayedProgress, 1), 3);
-
-              // Interpolate position
-              balloon.position.lerpVectors(
-                balloon.userData.originalPosition,
-                balloon.userData.endPosition,
-                easeProgress
-              );
-
-              // Add rotation
-              balloon.rotation.copy(balloon.userData.rotation);
-              balloon.rotation.z += easeProgress * Math.PI;
-
-              // Fade out
-              balloon.material.opacity = 1 - easeProgress * 0.5;
-            }
-          });
-        } else {
-          isAnimating = false;
-          // Reset for replay
-          setTimeout(() => {
-            balloons.forEach((balloon) => {
-              balloon.position.copy(balloon.userData.originalPosition);
-              balloon.rotation.set(0, 0, 0);
-              balloon.material.opacity = 1;
-            });
-            cork.rotation.z = 0;
-            cork.position.y = -0.5;
-            document.getElementById("tapMessage").classList.remove("hidden");
-          }, 1000);
-        }
+        // Individual balloon floating
+        balloons.forEach((balloon, i) => {
+          const time = sceneTime + balloon.userData.floatPhase;
+          balloon.position.y += Math.sin(time * 1.5) * 0.02;
+          balloon.position.x += Math.cos(time * 1.2) * 0.015;
+          balloon.rotation.x += balloon.userData.rotationSpeed * 0.01;
+          balloon.rotation.y += balloon.userData.rotationSpeed * 0.015;
+        });
       } else {
-        animateSway();
+        // ========== RELEASE STATE ==========
+        releaseProgress += 0.012;
+
+        // Upward acceleration
+        balloonGroup.position.y += releaseProgress * 0.35;
+        balloonGroup.rotation.y += 0.015;
+        balloonGroup.rotation.z += 0.008;
+
+        // Individual spread and rotation
+        balloons.forEach((balloon, i) => {
+          const angle = (i / balloons.length) * Math.PI * 2;
+          const radius = 1 + releaseProgress * 0.5;
+          
+          balloon.position.x += Math.cos(angle + sceneTime) * 0.08;
+          balloon.position.z += Math.sin(angle + sceneTime) * 0.08;
+          
+          balloon.rotation.x += 0.015;
+          balloon.rotation.y += 0.02;
+          balloon.rotation.z += 0.01;
+
+          // Fade out as balloons fly away
+          const fadeStart = 1.5;
+          if (releaseProgress > fadeStart) {
+            const fadeProgress = (releaseProgress - fadeStart) / 0.8;
+            balloon.material.opacity = Math.max(0, 1 - fadeProgress);
+          }
+        });
+
+        // Reset animation when balloons exit
+        if (balloonGroup.position.y > 30) {
+          isReleased = false;
+          releaseProgress = 0;
+          balloonGroup.position.set(0, 0, 0);
+          balloonGroup.rotation.set(0, 0, 0);
+          
+          balloons.forEach((balloon, i) => {
+            balloon.position.copy(balloon.userData.basePos);
+            balloon.material.opacity = 1;
+          });
+          
+          document.getElementById('releaseBtn').classList.remove('released');
+        }
       }
 
       renderer.render(scene, camera);
     }
 
-    // Handle window resize
-    window.addEventListener("resize", () => {
-      const width = container.clientWidth;
-      const height = container.clientHeight;
+    animate();
+
+    // ============================================
+    // WINDOW RESIZE HANDLING
+    // ============================================
+    window.addEventListener('resize', () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
     });
-
-    animate();
   </script>
+
 </body>
 </html>
